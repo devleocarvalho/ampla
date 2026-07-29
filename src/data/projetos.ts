@@ -18,7 +18,7 @@ export type Projeto = {
   resumo: string;
   detalhes: string;
   diferenciais: string[];
-  etapas: { nome: string; status: "concluida" | "andamento" | "pendente" }[];
+  etapas: { nome: string; status: "concluida" | "andamento" | "pendente" | "atrasada" }[];
 };
 
 export const projetos: Projeto[] = [
