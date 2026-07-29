@@ -1,8 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import { Plus, Search, MapPin, Calendar, HardHat } from "lucide-react";
-import { projetos } from "@/data/projetos";
+import { useProjects } from "@/context/ProjectContext";
 
 export default function ProjetosPage() {
+  const { projetosList: projetos } = useProjects();
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

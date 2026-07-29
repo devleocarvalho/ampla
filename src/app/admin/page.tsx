@@ -1,8 +1,12 @@
+"use client";
+
 import { TrendingUp, FolderKanban, Users, AlertTriangle, Building2, Landmark, ShieldAlert, ArrowDownRight, ArrowUpRight } from "lucide-react";
-import { projetos } from "@/data/projetos";
 import Link from "next/link";
+import { useProjects } from "@/context/ProjectContext";
 
 export default function AdminDashboard() {
+  const { projetosList: projetos } = useProjects();
+
   const projetosAtivos = projetos.filter((p) => p.status === "Em construção").length;
   const projetosConcluidos = projetos.filter((p) => p.status === "Concluído").length;
   const atrasados = projetos.filter((p) => p.status === "Atrasado").length;

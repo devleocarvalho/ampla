@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
-import { projetos, Projeto } from "@/data/projetos";
-import { ArrowLeft, CheckCircle2, Clock, AlertTriangle, AlertCircle, Save } from "lucide-react";
+import { use } from "react";
+import { ArrowLeft, CheckCircle2, Clock, AlertTriangle, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { useProjects } from "@/context/ProjectContext";
 
-// Extendemos o tipo localmente para suportar 'atrasada' na UI
 type EtapaStatus = "concluida" | "andamento" | "pendente" | "atrasada";
 type EtapaLocal = { nome: string; status: EtapaStatus };
 
@@ -16,46 +15,50 @@ export default function GestaoProjetoPage({
   params: Promise<{ id: string }>;
 }) {
   const resolvedParams = use(params);
-  const projetoBase = projetos.find((p) => p.id === resolvedParams.id);
+  const { projetosList, updateProjeto } = useProjects();
+  
+  const projetoBase = projetosList.find((p) => p.id === resolvedParams.id);
 
   if (!projetoBase) {
     notFound();
   }
 
-  // Estado Local (Simulando o Banco de Dados)
-  const [etapas, setEtapas] = useState<EtapaLocal[]>(
-    projetoBase.etapas as EtapaLocal[]
-  );
-  const [statusGeral, setStatusGeral] = useState(projetoBase.status);
-  const [progresso, setProgresso] = useState(projetoBase.progresso);
-
-  // Recalcular progresso sempre que as etapas mudarem
-  useEffect(() => {
-    if (etapas.length === 0) return;
-    
-    const concluidas = etapas.filter(e => e.status === "concluida").length;
-    const novoProgresso = Math.round((concluidas / etapas.length) * 100);
-    setProgresso(novoProgresso);
-
-    // Lógica para sinalizar atraso automaticamente
-    const temAtraso = etapas.some(e => e.status === "atrasada");
-    
-    if (novoProgresso === 100) {
-      setStatusGeral("Concluído");
-    } else if (temAtraso) {
-      setStatusGeral("Atrasado");
-    } else if (novoProgresso > 0 && statusGeral === "Planejamento") {
-      setStatusGeral("Em construção");
-    } else if (!temAtraso && statusGeral === "Atrasado") {
-      setStatusGeral("Em construção"); // Remove o atraso se a etapa atrasada for resolvida
-    }
-
-  }, [etapas]);
+  const etapas = projetoBase.etapas as EtapaLocal[];
+  const statusGeral = projetoBase.status;
+  const progresso = projetoBase.progresso;
 
   const mudarStatusEtapa = (index: number, novoStatus: EtapaStatus) => {
     const novasEtapas = [...etapas];
     novasEtapas[index].status = novoStatus;
-    setEtapas(novasEtapas);
+    
+    // Recalcular Progresso
+    const concluidas = novasEtapas.filter(e => e.status === "concluida").length;
+    const novoProgresso = Math.round((concluidas / novasEtapas.length) * 100);
+    
+    // Recalcular Status Geral
+    let novoStatusGeral = statusGeral;
+    const temAtraso = novasEtapas.some(e => e.status === "atrasada");
+    
+    if (novoProgresso === 100) {
+      novoStatusGeral = "Concluído";
+    } else if (temAtraso) {
+      novoStatusGeral = "Atrasado";
+    } else if (novoProgresso > 0 && statusGeral === "Planejamento") {
+      novoStatusGeral = "Em construção";
+    } else if (!temAtraso && statusGeral === "Atrasado") {
+      novoStatusGeral = "Em construção";
+    }
+
+    // Salvar no Contexto Global (Sincronizado na hora)
+    updateProjeto(projetoBase.id, {
+      etapas: novasEtapas,
+      progresso: novoProgresso,
+      status: novoStatusGeral
+    });
+  };
+
+  const mudarStatusDireto = (novoStatusGeral: string) => {
+    updateProjeto(projetoBase.id, { status: novoStatusGeral });
   };
 
   const getStatusIcon = (status: EtapaStatus) => {
@@ -89,19 +92,10 @@ export default function GestaoProjetoPage({
             <h1 className="text-3xl font-bold tracking-tight text-foreground">{projetoBase.title}</h1>
             <p className="text-muted-foreground mt-2">Painel Interativo de Evolução da Obra</p>
           </div>
-          <button className="flex items-center space-x-2 bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors font-medium shadow-sm">
-            <Save className="h-4 w-4" />
-            <span>Salvar Alterações</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Aviso de Mock */}
-      <div className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-700 p-4 rounded-lg flex items-start space-x-3">
-        <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
-        <div className="text-sm">
-          <p className="font-bold">Modo de Demonstração (Client-Side)</p>
-          <p>Esta tela é um protótipo interativo. O progresso é calculado automaticamente com base no checklist de etapas abaixo. Se houver alguma etapa sinalizada como "Atrasada", o status da obra também muda automaticamente para alertar os gestores.</p>
+          <div className="px-3 py-1 bg-green-500/10 text-green-700 border border-green-500/20 rounded-md text-sm font-bold flex items-center">
+            <CheckCircle2 className="h-4 w-4 mr-2" />
+            Sincronizado Globalmente
+          </div>
         </div>
       </div>
 
@@ -114,7 +108,7 @@ export default function GestaoProjetoPage({
               <h2 className="text-xl font-bold text-foreground">Status Geral e Progresso</h2>
               <select 
                 value={statusGeral}
-                onChange={(e) => setStatusGeral(e.target.value)}
+                onChange={(e) => mudarStatusDireto(e.target.value)}
                 className={`px-3 py-1.5 rounded-md border text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 ${getStatusColorGeral(statusGeral)}`}
               >
                 <option value="Planejamento">Planejamento</option>
@@ -145,7 +139,7 @@ export default function GestaoProjetoPage({
           <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
             <div className="p-6 border-b border-border">
               <h2 className="text-xl font-bold text-foreground">Checklist de Etapas (Cronograma)</h2>
-              <p className="text-sm text-muted-foreground mt-1">Marque as etapas concluídas ou sinalize atrasos para recalcular o progresso.</p>
+              <p className="text-sm text-muted-foreground mt-1">Sincronizado em tempo real com Contabilidade e Dashboard Global.</p>
             </div>
             <div className="divide-y divide-border">
               {etapas.map((etapa, index) => (

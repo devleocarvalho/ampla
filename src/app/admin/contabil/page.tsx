@@ -1,8 +1,11 @@
+"use client";
+
 import { DollarSign, FileText, ArrowUpRight, ArrowDownRight, Download, Building2, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { projetos } from "@/data/projetos";
+import { useProjects } from "@/context/ProjectContext";
 
 export default function ContabilPage() {
+  const { projetosList: projetos } = useProjects();
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

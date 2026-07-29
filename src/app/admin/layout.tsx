@@ -1,6 +1,7 @@
 import Sidebar from "@/components/admin/Sidebar";
 import TopNav from "@/components/admin/TopNav";
 import { ReactNode } from "react";
+import { ProjectProvider } from "@/context/ProjectContext";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
@@ -10,7 +11,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         <TopNav />
         <main className="flex-1 p-8 ml-64 mt-20">
           <div className="max-w-7xl mx-auto">
-            {children}
+            <ProjectProvider>
+              {children}
+            </ProjectProvider>
           </div>
         </main>
       </div>

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, use } from "react";
-import { DollarSign, FileText, ArrowUpRight, ArrowDownRight, ArrowLeft, Download, Building2, TrendingDown, AlertTriangle, Scale, Calculator, Users, Receipt, Briefcase, Info } from "lucide-react";
+import { DollarSign, FileText, ArrowUpRight, ArrowDownRight, ArrowLeft, Download, Building2, TrendingDown, AlertTriangle, Scale, Calculator, Users, Receipt, Briefcase, Info, CheckCircle2, Landmark } from "lucide-react";
 import Link from "next/link";
-import { projetos } from "@/data/projetos";
+import { useProjects } from "@/context/ProjectContext";
 import { notFound } from "next/navigation";
 
 export default function ProjetoAuditoriaPage({
@@ -12,7 +12,8 @@ export default function ProjetoAuditoriaPage({
   params: Promise<{ id: string }>;
 }) {
   const resolvedParams = use(params);
-  const projeto = projetos.find((p) => p.id === resolvedParams.id);
+  const { projetosList } = useProjects();
+  const projeto = projetosList.find((p) => p.id === resolvedParams.id);
 
   if (!projeto) {
     notFound();
@@ -200,9 +201,21 @@ export default function ProjetoAuditoriaPage({
         {/* ABA: Fluxo de Caixa */}
         {activeTab === "resumo" && (
           <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-border">
-              <h2 className="text-lg font-bold text-foreground">Demonstrativo de Fluxo de Caixa (DFC)</h2>
-              <p className="text-sm text-muted-foreground mt-1">Lançamentos bancários, recebimentos e desembolsos recentes do projeto.</p>
+            <div className="p-6 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-foreground">Demonstrativo de Fluxo de Caixa (DFC)</h2>
+                <p className="text-sm text-muted-foreground mt-1">Lançamentos bancários, recebimentos e desembolsos recentes do projeto.</p>
+              </div>
+              <div className="flex space-x-2">
+                <button className="flex items-center space-x-2 bg-red-500/10 text-red-700 hover:bg-red-500/20 border border-red-500/20 px-3 py-1.5 rounded-md transition-colors font-medium text-sm">
+                  <ArrowDownRight className="h-4 w-4" />
+                  <span>Nova Saída</span>
+                </button>
+                <button className="flex items-center space-x-2 bg-green-500/10 text-green-700 hover:bg-green-500/20 border border-green-500/20 px-3 py-1.5 rounded-md transition-colors font-medium text-sm">
+                  <ArrowUpRight className="h-4 w-4" />
+                  <span>Nova Entrada</span>
+                </button>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
