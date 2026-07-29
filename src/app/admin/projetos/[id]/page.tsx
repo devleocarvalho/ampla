@@ -5,6 +5,7 @@ import { ArrowLeft, CheckCircle2, Clock, AlertTriangle, AlertCircle } from "luci
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useProjects } from "@/context/ProjectContext";
+import { Projeto } from "@/data/projetos";
 
 type EtapaStatus = "concluida" | "andamento" | "pendente" | "atrasada";
 type EtapaLocal = { nome: string; status: EtapaStatus };
@@ -57,7 +58,7 @@ export default function GestaoProjetoPage({
     });
   };
 
-  const mudarStatusDireto = (novoStatusGeral: string) => {
+  const mudarStatusDireto = (novoStatusGeral: Projeto["status"]) => {
     updateProjeto(projetoBase.id, { status: novoStatusGeral });
   };
 
@@ -108,7 +109,7 @@ export default function GestaoProjetoPage({
               <h2 className="text-xl font-bold text-foreground">Status Geral e Progresso</h2>
               <select 
                 value={statusGeral}
-                onChange={(e) => mudarStatusDireto(e.target.value)}
+                onChange={(e) => mudarStatusDireto(e.target.value as Projeto["status"])}
                 className={`px-3 py-1.5 rounded-md border text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 ${getStatusColorGeral(statusGeral)}`}
               >
                 <option value="Planejamento">Planejamento</option>
