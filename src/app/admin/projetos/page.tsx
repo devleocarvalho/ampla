@@ -87,7 +87,7 @@ export default function ProjetosPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <Link href={`/projetos/${projeto.id}`} className="text-primary hover:underline font-medium text-sm">
+                    <Link href={`/admin/projetos/${projeto.id}`} className="text-primary hover:underline font-medium text-sm">
                       Gerenciar
                     </Link>
                   </td>
